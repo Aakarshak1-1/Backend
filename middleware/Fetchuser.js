@@ -8,9 +8,10 @@ const Fetchuser = (req, res, next) => {
   try {
     const data = jwt.verify(token, JWT_SECRET);
     req.user = data.user;
+    next();
   } catch (error) {
-    res.status(401).send("Unauthorized Access....The token is invalid");
+    // console.error(error.message)
+    res.status(401).json("Unauthorized Access....The token is invalid");
   }
-  next();
 };
 module.exports = Fetchuser;

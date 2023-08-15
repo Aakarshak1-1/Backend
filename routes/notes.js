@@ -45,4 +45,58 @@ router.post(
     }
   }
 );
+
+// Updating the notes
+router.put("/updatenotes/:id", Fetchuser, async (req, res) => {
+  try {
+    const { title, description, tag } = req.body;
+    //   Create a new note
+    const newNote = {};
+    if (title) {
+      newNote.title = title;
+    }
+    if (description) {
+      newNote.description = description;
+    }
+    if (tag) {
+      newNote.tag = tag;
+    }
+    //   Find the note and update it
+    // console.log(await Notes.findById(req.params.id));
+    let note = await Notes.findById(req.params.id);
+    if (!note) {
+      res.status(404).json("Not Found");
+    }
+    if (note.user.toString() !== req.user.id) {
+      res.status(401).json("Unauthorized access");
+    }
+    note = await Notes.findByIdAndUpdate(
+      req.params.id,
+      { $set: newNote },
+      { new: true }
+    );
+    res.json(note);
+  } catch (error) {
+    // console.error(error.message);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+// Deleting the notes
+router.delete("/deletenotes/:id", Fetchuser, async (req, res) => {
+  try {
+    let note = await Notes.findById(req.params.id);
+    if (!note) {
+      res.status(404).json("Not Found");
+    } else {
+      if (note.user.toString() !== req.user.id) {
+        res.status(401).json("Unauthorized access");
+      }
+      note = await Notes.findByIdAndDelete(req.params.id);
+      res.json({ Success: "Note has been deleted", note: note });
+    }
+  } catch (error) {
+    res.status(500).send("Internal Server Error");
+  }
+});
 module.exports = router;
