@@ -20,13 +20,16 @@ router.post(
     const errors = validationResult(req);
     // Erros to find
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      success = "true";
+      return res.status(400).json({ success, errors: errors.array() });
     }
     // Check if the user exits
     try {
       let user = await User.findOne({ email: req.body.email });
       if (user) {
+        success = "false";
         return res.status(400).json({
+          success,
           errors:
             "A user with the same email exists so please Enter the unique value",
         });
@@ -47,9 +50,10 @@ router.post(
         },
       };
       const JWT_token = jwt.sign(data, JWT_SECRET);
-      console.log(JWT_token);
+      //   console.log(JWT_token);
       // Response
-      res.json({ JWT_token });
+      success = "true";
+      res.json({ success, JWT_token });
     } catch (error) {
       console.error(error.message);
       res.status(500).send("Some error has been occured on the server");
@@ -67,17 +71,22 @@ router.post(
     const errors = validationResult(req);
     // Erros to find
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      sucess = false;
+      return res.status(400).json({ success, errors: errors.array() });
     }
     const { email, password } = req.body;
     try {
       let user = await User.findOne({ email });
       if (!user) {
-        res.status(400).json({ errors: "Invalid email and password" });
+        success = false;
+        res.status(400).json({ success, errors: "Invalid email and password" });
       } else {
         const password_comp = await bcrypt.compare(password, user.password);
         if (!password_comp) {
-          res.status(400).json({ errors: "Invalid email and password" });
+          success = false;
+          res
+            .status(400)
+            .json({ success, errors: "Invalid email and password" });
         } else {
           data = {
             user: {
@@ -87,7 +96,8 @@ router.post(
           const JWT_token = jwt.sign(data, JWT_SECRET);
           console.log(JWT_token);
           // Response
-          res.json({ JWT_token });
+          success = true;
+          res.json({ success, JWT_token });
         }
       }
     } catch (error) {
